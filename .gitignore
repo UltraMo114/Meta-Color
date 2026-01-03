@@ -22,4 +22,4 @@ dist/
 papers_backup_*/
 
 # Local helper scripts (ignore if you keep scripts untracked)
-scripts/
+# scripts/

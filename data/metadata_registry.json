@@ -1,0 +1,380 @@
+[
+  {
+    "id": "BFD-P",
+    "name_in_paper": "BFD-P",
+    "paper": {
+      "title": "Chromaticity-Discrimination Ellipses for Surface Colours",
+      "authors": [
+        "P"
+      ],
+      "year": 1986,
+      "citation_key": "BFD-P"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "threshold",
+      "texture": "glossy",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BFD-P-Luo-1986-Chromaticity discrimination ellipses.md"
+  },
+  {
+    "id": "Leeds",
+    "name_in_paper": "Leeds/BFD",
+    "paper": {
+      "title": "Chromaticity-Discrimination Ellipses for Surface Colours",
+      "authors": [
+        "P"
+      ],
+      "year": 1986,
+      "citation_key": "Leeds"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "threshold",
+      "texture": "matte",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BFD-P-Luo-1986-Chromaticity discrimination ellipses.md"
+  },
+  {
+    "id": "BIGC-T1-SG",
+    "name_in_paper": "BIGC-T1-SG",
+    "paper": {
+      "title": "Evaluation of threshold color differences using printed samples",
+      "authors": [
+        "T1"
+      ],
+      "year": 2012,
+      "citation_key": "BIGC-T1-SG"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "threshold",
+      "texture": "semi-gloss",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BIGC-T1-SG-Huang-2012-Evaluation threshold differences.md"
+  },
+  {
+    "id": "BIGC-T2-M",
+    "name_in_paper": "BIGC-T2-M",
+    "paper": {
+      "title": "不同光泽印刷样品的微小色差评价研究",
+      "authors": [
+        "T2"
+      ],
+      "year": 2010,
+      "citation_key": "BIGC-T2-M"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-small",
+      "texture": "matte",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BIGC-T2-M-Huang-2010-Small difference different gloss.md"
+  },
+  {
+    "id": "BIGC-T2-SG",
+    "name_in_paper": "BIGC-T2-SG",
+    "paper": {
+      "title": "不同光泽印刷样品的微小色差评价研究",
+      "authors": [
+        "T2"
+      ],
+      "year": 2010,
+      "citation_key": "BIGC-T2-SG"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-small",
+      "texture": "semi-gloss",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BIGC-T2-SG-Huang-2010-Small difference different gloss.md"
+  },
+  {
+    "id": "BIGC-T2-G",
+    "name_in_paper": "BIGC-T2-G",
+    "paper": {
+      "title": "不同光泽印刷样品的微小色差评价研究",
+      "authors": [
+        "T2"
+      ],
+      "year": 2010,
+      "citation_key": "BIGC-T2-G"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-small",
+      "texture": "glossy",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BIGC-T2-G-Huang-2010-Small difference different gloss.md"
+  },
+  {
+    "id": "BIGC-S-SG",
+    "name_in_paper": "BIGC-S-SG",
+    "paper": {
+      "title": "Testing Uniform Colour Spaces and Colour-Difference Formulae Using Printed Samples",
+      "authors": [
+        "S"
+      ],
+      "year": 2011,
+      "citation_key": "BIGC-S-SG"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-small",
+      "texture": "semi-gloss",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/BIGC-S-SG-Huang-2011-Testing uniform colour spaces.md"
+  },
+  {
+    "id": "HDR-Surface",
+    "name_in_paper": "HDR-Surface",
+    "paper": {
+      "title": "Assessing Colour Differences under a Wide Range of Luminance Levels Using Surface and Display Colours",
+      "authors": [
+        "Surface"
+      ],
+      "year": 2019,
+      "citation_key": "HDR-Surface"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/HDR-Surface-Xu-2019-Wide range luminance levels.md"
+  },
+  {
+    "id": "HDR-Display",
+    "name_in_paper": "HDR-Display",
+    "paper": {
+      "title": "Assessing Colour Differences under a Wide Range of Luminance Levels Using Surface and Display Colours",
+      "authors": [
+        "Display"
+      ],
+      "year": 2019,
+      "citation_key": "HDR-Display"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/HDR-Display-Xu-2019-Wide range luminance levels.md"
+  },
+  {
+    "id": "WCG",
+    "name_in_paper": "WCG",
+    "paper": {
+      "title": "Testing uniform colour spaces using colour differences of a wide colour gamut",
+      "authors": [
+        "Xu"
+      ],
+      "year": 2021,
+      "citation_key": "WCG"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/WCG-Xu-2021-Testing uniform spaces wide gamut.md"
+  },
+  {
+    "id": "Parametric-NS",
+    "name_in_paper": "Parametric-NS",
+    "paper": {
+      "title": "Parametric effects in color-difference evaluation",
+      "authors": [
+        "NS"
+      ],
+      "year": 2022,
+      "citation_key": "Parametric-NS"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Parametric-NS-Xu-2022-Parametric effects evaluation.md"
+  },
+  {
+    "id": "Parametric-S",
+    "name_in_paper": "Parametric-S",
+    "paper": {
+      "title": "Parametric effects in color-difference evaluation",
+      "authors": [
+        "S"
+      ],
+      "year": 2022,
+      "citation_key": "Parametric-S"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Parametric-S-Xu-2022-Parametric effects evaluation.md"
+  },
+  {
+    "id": "Cui-NS",
+    "name_in_paper": "Cui-NS",
+    "paper": {
+      "title": "Colour-Difference Evaluation Using CRT Colours. Part I: Data Gathering and Testing Colour Difference Formulae",
+      "authors": [
+        "Cui"
+      ],
+      "year": 2001,
+      "citation_key": "Cui-NS"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Cui-Cui-2001-Evaluation using CRT colours Part I.md"
+  },
+  {
+    "id": "Cui-S-All",
+    "name_in_paper": "Cui-S-All",
+    "paper": {
+      "title": "Colour-Difference Evaluation Using CRT Colours. Part I: Data Gathering and Testing Colour Difference Formulae",
+      "authors": [
+        "Cui"
+      ],
+      "year": 2001,
+      "citation_key": "Cui-S-All"
+    },
+    "conditions": {
+      "medium_type": "display",
+      "magnitude": "suprathreshold-small",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Cui-Cui-2001-Evaluation using CRT colours Part I.md"
+  },
+  {
+    "id": "Pointer",
+    "name_in_paper": "Pointer",
+    "paper": {
+      "title": "Some Aspects of the Visual Scaling of Large Colour Differences",
+      "authors": [
+        "Pointer"
+      ],
+      "year": 1997,
+      "citation_key": "Pointer"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-large",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Pointer-Pointer-1997-Visual scaling large differences.md"
+  },
+  {
+    "id": "Guan-LCD",
+    "name_in_paper": "Guan-LCD",
+    "paper": {
+      "title": "A Colour-Difference Formula for Assessing Large Colour Differences",
+      "authors": [
+        "LCD"
+      ],
+      "year": 1999,
+      "citation_key": "Guan-LCD"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-large",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Guan-LCD-Guan-1999-Formula large differences.md"
+  },
+  {
+    "id": "OSA",
+    "name_in_paper": "OSA",
+    "paper": {
+      "title": "Uniform color scales $ ^{*} $",
+      "authors": [
+        "MacAdam"
+      ],
+      "year": 1974,
+      "citation_key": "OSA"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-large",
+      "texture": "unknown",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/OSA-MacAdam-1974-Uniform color scales.md"
+  },
+  {
+    "id": "Munsell",
+    "name_in_paper": "Munsell",
+    "paper": {
+      "title": "Preliminary Report of the O.S.A. Subcommittee on the Spacing of the Munsell Colors",
+      "authors": [
+        "Newhall"
+      ],
+      "year": 1940,
+      "citation_key": "Munsell"
+    },
+    "conditions": {
+      "medium_type": "surface",
+      "magnitude": "suprathreshold-large",
+      "texture": "matte",
+      "background_luminance": null
+    },
+    "sample_size": 0,
+    "observer_count": null,
+    "notes_file_path": "papers/Munsell-Newhall-1940-OSA Munsell spacing.md"
+  }
+]
