@@ -36,7 +36,8 @@ def analyze_single_dataset(dataset, model):
         dE = model.predict(
             pair.xyz_1,
             pair.xyz_2,
-            input_type='XYZ'
+            input_type='XYZ',
+            whitepoint=pair.xyz_w
         )
         predicted.append(dE)
         observed.append(pair.visual_difference)

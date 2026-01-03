@@ -102,7 +102,7 @@ predicted = []
 observed = []
 
 for pair in bfd_p.color_pairs:
-    dE = model.predict(pair.xyz_1, pair.xyz_2, input_type='XYZ')
+    dE = model.predict(pair.xyz_1, pair.xyz_2, input_type='XYZ', whitepoint=pair.xyz_w)
     predicted.append(dE)
     observed.append(pair.visual_difference)
 

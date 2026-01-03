@@ -2,12 +2,47 @@
 Color difference models using colour-science library
 
 This module provides a unified interface for different color difference formulas.
-All models accept XYZ (0-100 range) or Lab inputs and return color differences.
+For XYZ inputs, this project requires using each sample-pair's own reference
+whitepoint (XYZw) from the dataset rather than assuming a fixed default (e.g. D65).
 """
 
 from abc import ABC, abstractmethod
 import numpy as np
 import colour
+
+
+_EPSILON = 216 / 24389  # (6/29)^3
+_KAPPA = 24389 / 27
+
+
+def xyz_to_lab_user_whitepoint(xyz: np.ndarray, whitepoint_xyz: np.ndarray) -> np.ndarray:
+    """
+    Convert CIE XYZ to CIE Lab using an explicit reference whitepoint XYZw (both same scale).
+
+    Supports shape (3,) or (N, 3) for both inputs. Broadcasting is allowed for a
+    single whitepoint (3,) with many XYZ rows (N, 3).
+    """
+    xyz_arr = np.asarray(xyz, dtype=float)
+    wp_arr = np.asarray(whitepoint_xyz, dtype=float)
+
+    if xyz_arr.shape[-1] != 3 or wp_arr.shape[-1] != 3:
+        raise ValueError("xyz and whitepoint_xyz must end with 3 components (X, Y, Z)")
+
+    if np.any(wp_arr == 0):
+        raise ValueError("whitepoint_xyz must be non-zero in all components")
+
+    t = xyz_arr / wp_arr
+    f = np.where(t > _EPSILON, np.cbrt(t), (_KAPPA * t + 16.0) / 116.0)
+
+    fx = f[..., 0]
+    fy = f[..., 1]
+    fz = f[..., 2]
+
+    L = 116.0 * fy - 16.0
+    a = 500.0 * (fx - fy)
+    b = 200.0 * (fy - fz)
+
+    return np.stack([L, a, b], axis=-1)
 
 
 class ColorDifferenceModel(ABC):
@@ -20,7 +55,8 @@ class ColorDifferenceModel(ABC):
     def predict(self,
                 reference: np.ndarray,
                 sample: np.ndarray,
-                input_type: str = 'XYZ') -> float:
+                input_type: str = 'XYZ',
+                whitepoint: np.ndarray | None = None) -> float:
         """
         Calculate color difference between reference and sample
 
@@ -32,6 +68,9 @@ class ColorDifferenceModel(ABC):
             Sample color (XYZ in 0-100 range or Lab)
         input_type : str
             Input color space: 'XYZ' or 'Lab'
+        whitepoint : np.ndarray | None
+            Reference whitepoint XYZw for XYZ inputs (shape: (3,)).
+            Required when input_type='XYZ' for dataset-based evaluation.
 
         Returns
         -------
@@ -43,7 +82,7 @@ class ColorDifferenceModel(ABC):
     def _ensure_lab(self,
                     color: np.ndarray,
                     input_type: str,
-                    illuminant: np.ndarray = colour.CCS_ILLUMINANTS['CIE 1964 10 Degree Standard Observer']['D65']) -> np.ndarray:
+                    whitepoint_xyz: np.ndarray | None) -> np.ndarray:
         """
         Convert input to Lab if needed
 
@@ -53,8 +92,8 @@ class ColorDifferenceModel(ABC):
             Input color
         input_type : str
             'XYZ' or 'Lab'
-        illuminant : np.ndarray
-            Illuminant for XYZ to Lab conversion (default: D65)
+        whitepoint_xyz : np.ndarray | None
+            Reference whitepoint XYZw for XYZ to Lab conversion.
 
         Returns
         -------
@@ -62,8 +101,9 @@ class ColorDifferenceModel(ABC):
             Lab values
         """
         if input_type == 'XYZ':
-            # Convert XYZ (0-100) to Lab
-            return colour.XYZ_to_Lab(color, illuminant=illuminant)
+            if whitepoint_xyz is None:
+                raise ValueError("XYZ input requires whitepoint (XYZw); refusing to assume a default illuminant.")
+            return xyz_to_lab_user_whitepoint(color, whitepoint_xyz)
         elif input_type == 'Lab':
             return color
         else:
@@ -82,7 +122,8 @@ class CIELAB(ColorDifferenceModel):
     def predict(self,
                 reference: np.ndarray,
                 sample: np.ndarray,
-                input_type: str = 'XYZ') -> float:
+                input_type: str = 'XYZ',
+                whitepoint: np.ndarray | None = None) -> float:
         """
         Calculate CIELAB ΔE*ab color difference
 
@@ -94,14 +135,16 @@ class CIELAB(ColorDifferenceModel):
             Sample color (XYZ in 0-100 range or Lab)
         input_type : str
             Input color space: 'XYZ' or 'Lab'
+        whitepoint : np.ndarray | None
+            Reference whitepoint XYZw for XYZ inputs (shape: (3,)).
 
         Returns
         -------
         float
             CIELAB ΔE*ab value
         """
-        lab_ref = self._ensure_lab(reference, input_type)
-        lab_sample = self._ensure_lab(sample, input_type)
+        lab_ref = self._ensure_lab(reference, input_type, whitepoint)
+        lab_sample = self._ensure_lab(sample, input_type, whitepoint)
 
         # Calculate Euclidean distance in Lab space
         delta_E = np.sqrt(np.sum((lab_sample - lab_ref) ** 2))
@@ -133,7 +176,8 @@ class CIEDE2000(ColorDifferenceModel):
     def predict(self,
                 reference: np.ndarray,
                 sample: np.ndarray,
-                input_type: str = 'XYZ') -> float:
+                input_type: str = 'XYZ',
+                whitepoint: np.ndarray | None = None) -> float:
         """
         Calculate CIEDE2000 color difference
 
@@ -145,14 +189,16 @@ class CIEDE2000(ColorDifferenceModel):
             Sample color (XYZ in 0-100 range or Lab)
         input_type : str
             Input color space: 'XYZ' or 'Lab'
+        whitepoint : np.ndarray | None
+            Reference whitepoint XYZw for XYZ inputs (shape: (3,)).
 
         Returns
         -------
         float
             CIEDE2000 ΔE value
         """
-        lab_ref = self._ensure_lab(reference, input_type)
-        lab_sample = self._ensure_lab(sample, input_type)
+        lab_ref = self._ensure_lab(reference, input_type, whitepoint)
+        lab_sample = self._ensure_lab(sample, input_type, whitepoint)
 
         # Use colour-science's CIEDE2000 implementation
         # Note: colour-science uses different parameter names
@@ -191,7 +237,8 @@ class CAM16UCS(ColorDifferenceModel):
     def predict(self,
                 reference: np.ndarray,
                 sample: np.ndarray,
-                input_type: str = 'XYZ') -> float:
+                input_type: str = 'XYZ',
+                whitepoint: np.ndarray | None = None) -> float:
         """
         Calculate CAM16-UCS color difference
 
@@ -203,24 +250,39 @@ class CAM16UCS(ColorDifferenceModel):
             Sample color (XYZ in 0-100 range or Lab)
         input_type : str
             Input color space: 'XYZ' or 'Lab'
+        whitepoint : np.ndarray | None
+            Reference whitepoint XYZw for XYZ inputs (shape: (3,)).
 
         Returns
         -------
         float
             CAM16-UCS ΔE value
         """
-        # CAM16 requires XYZ input
         if input_type == 'Lab':
-            # Convert Lab back to XYZ (assuming D65 illuminant)
-            illuminant = colour.CCS_ILLUMINANTS['CIE 1964 10 Degree Standard Observer']['D65']
-            xyz_ref = colour.Lab_to_XYZ(reference, illuminant=illuminant)
-            xyz_sample = colour.Lab_to_XYZ(sample, illuminant=illuminant)
-        else:
-            xyz_ref = reference
-            xyz_sample = sample
+            # Lab requires a reference whitepoint; defaulting to D65 is acceptable here.
+            if whitepoint is None:
+                illuminant_xy = colour.CCS_ILLUMINANTS['CIE 1964 10 Degree Standard Observer']['D65']
+                whitepoint_xyz = colour.xy_to_XYZ(illuminant_xy) * 100
+            else:
+                whitepoint_xyz = np.asarray(whitepoint, dtype=float)
+                illuminant_xy = colour.XYZ_to_xy(whitepoint_xyz)
 
-        # Get white point (D65)
-        XYZ_w = colour.CCS_ILLUMINANTS['CIE 1964 10 Degree Standard Observer']['D65'] * 100
+            xyz_ref = colour.Lab_to_XYZ(reference, illuminant=illuminant_xy)
+            xyz_sample = colour.Lab_to_XYZ(sample, illuminant=illuminant_xy)
+        else:
+            if whitepoint is None:
+                raise ValueError("XYZ input requires whitepoint (XYZw); refusing to assume a default illuminant.")
+            whitepoint_xyz = np.asarray(whitepoint, dtype=float)
+            xyz_ref = np.asarray(reference, dtype=float)
+            xyz_sample = np.asarray(sample, dtype=float)
+
+        # Scale so that whitepoint Y == 100 (matching MATLAB reference pipeline).
+        if float(whitepoint_xyz[1]) == 0.0:
+            raise ValueError("whitepoint Y component must be non-zero")
+        scale = 100.0 / float(whitepoint_xyz[1])
+        XYZ_w = whitepoint_xyz * scale
+        xyz_ref = xyz_ref * scale
+        xyz_sample = xyz_sample * scale
 
         # Convert to CAM16 space
         try:
@@ -256,7 +318,7 @@ class CAM16UCS(ColorDifferenceModel):
             # fall back to CIELAB
             print(f"Warning: CAM16 calculation failed ({e}), using CIELAB fallback")
             cielab = CIELAB()
-            delta_E = cielab.predict(reference, sample, input_type)
+            delta_E = cielab.predict(reference, sample, input_type, whitepoint=whitepoint)
 
         return delta_E
 
@@ -281,7 +343,7 @@ def get_model(model_name: str, **kwargs) -> ColorDifferenceModel:
     Examples
     --------
     >>> model = get_model('CIEDE2000', kL=1.0, kC=1.0, kH=1.0)
-    >>> dE = model.predict(xyz_ref, xyz_sample, input_type='XYZ')
+    >>> dE = model.predict(xyz_ref, xyz_sample, input_type='XYZ', whitepoint=xyzw)
     """
     models = {
         'CIELAB': CIELAB,

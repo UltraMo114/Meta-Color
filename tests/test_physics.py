@@ -7,7 +7,7 @@ physical properties and match expected behavior.
 
 import pytest
 import numpy as np
-from src.models import CIELAB, CIEDE2000, CAM16UCS, get_model
+from src.models import CIELAB, CIEDE2000, CAM16UCS, get_model, xyz_to_lab_user_whitepoint
 
 
 class TestColorDifferencePhysics:
@@ -40,7 +40,7 @@ class TestColorDifferencePhysics:
 
         for model in self.models:
             for color in test_colors:
-                dE = model.predict(color, color, input_type='XYZ')
+                dE = model.predict(color, color, input_type='XYZ', whitepoint=self.xyz_white)
                 assert abs(dE) < 1e-10, \
                     f"{model.name}: dE({color}, {color}) = {dE}, expected 0"
 
@@ -55,8 +55,8 @@ class TestColorDifferencePhysics:
 
         for model in self.models:
             for color_a, color_b in color_pairs:
-                dE_ab = model.predict(color_a, color_b, input_type='XYZ')
-                dE_ba = model.predict(color_b, color_a, input_type='XYZ')
+                dE_ab = model.predict(color_a, color_b, input_type='XYZ', whitepoint=self.xyz_white)
+                dE_ba = model.predict(color_b, color_a, input_type='XYZ', whitepoint=self.xyz_white)
 
                 assert abs(dE_ab - dE_ba) < 1e-10, \
                     f"{model.name}: dE(A,B)={dE_ab} != dE(B,A)={dE_ba}"
@@ -71,7 +71,7 @@ class TestColorDifferencePhysics:
 
         for model in self.models:
             for color_a, color_b in color_pairs:
-                dE = model.predict(color_a, color_b, input_type='XYZ')
+                dE = model.predict(color_a, color_b, input_type='XYZ', whitepoint=self.xyz_white)
                 assert dE >= 0, f"{model.name}: dE(A,B)={dE} < 0"
 
     def test_triangle_inequality(self):
@@ -84,9 +84,9 @@ class TestColorDifferencePhysics:
 
         for model in self.models:
             for color_a, color_b, color_c in color_triplets:
-                dE_ac = model.predict(color_a, color_c, input_type='XYZ')
-                dE_ab = model.predict(color_a, color_b, input_type='XYZ')
-                dE_bc = model.predict(color_b, color_c, input_type='XYZ')
+                dE_ac = model.predict(color_a, color_c, input_type='XYZ', whitepoint=self.xyz_white)
+                dE_ab = model.predict(color_a, color_b, input_type='XYZ', whitepoint=self.xyz_white)
+                dE_bc = model.predict(color_b, color_c, input_type='XYZ', whitepoint=self.xyz_white)
 
                 # Allow some tolerance for perceptual spaces
                 assert dE_ac <= (dE_ab + dE_bc) * 1.1, \
@@ -188,17 +188,16 @@ class TestLabXYZConversion:
         """Test that XYZ input gives same result as Lab input"""
         xyz_color1 = np.array([50.0, 50.0, 50.0])
         xyz_color2 = np.array([60.0, 60.0, 60.0])
+        xyz_white = np.array([95.047, 100.0, 108.883])
 
         model = CIELAB()
 
         # Calculate using XYZ input
-        dE_xyz = model.predict(xyz_color1, xyz_color2, input_type='XYZ')
+        dE_xyz = model.predict(xyz_color1, xyz_color2, input_type='XYZ', whitepoint=xyz_white)
 
         # Convert to Lab and calculate
-        import colour
-        illuminant = colour.CCS_ILLUMINANTS['CIE 1964 10 Degree Standard Observer']['D65']
-        lab_color1 = colour.XYZ_to_Lab(xyz_color1, illuminant=illuminant)
-        lab_color2 = colour.XYZ_to_Lab(xyz_color2, illuminant=illuminant)
+        lab_color1 = xyz_to_lab_user_whitepoint(xyz_color1, xyz_white)
+        lab_color2 = xyz_to_lab_user_whitepoint(xyz_color2, xyz_white)
 
         dE_lab = model.predict(lab_color1, lab_color2, input_type='Lab')
 

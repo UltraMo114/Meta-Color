@@ -54,7 +54,7 @@ for i in range(min(5, first_dataset.n_pairs)):
     pair = first_dataset.color_pairs[i]
 
     # 计算 CIEDE2000
-    dE = model.predict(pair.xyz_1, pair.xyz_2, input_type='XYZ')
+    dE = model.predict(pair.xyz_1, pair.xyz_2, input_type='XYZ', whitepoint=pair.xyz_w)
 
     print(f"   颜色对 {i+1}: dE={dE:.4f}, Visual={pair.visual_difference:.4f}, 比率={dE/pair.visual_difference:.3f}")
 
