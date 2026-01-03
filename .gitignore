@@ -1,0 +1,25 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenv
+.venv/
+
+# Local/IDE tooling
+.claude/
+
+# Generated backups from rename scripts
+papers_backup_*/
+
+# Local helper scripts (ignore if you keep scripts untracked)
+scripts/
