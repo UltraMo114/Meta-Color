@@ -115,12 +115,25 @@ def _extract_dataset_struct(value: Any) -> dict[str, np.ndarray] | None:
     return out
 
 
-def run_classic_audit(datasets: dict[str, dict[str, np.ndarray]]) -> pd.DataFrame:
+def run_classic_audit(
+    datasets: dict[str, dict[str, np.ndarray]],
+    difference: str = "CIEDE2000",
+    adaptation_transform: str = "CAT02",
+) -> pd.DataFrame:
     _ensure_repo_imports()
-    from src.models import CIEDE2000, xyz_to_lab_user_whitepoint
+    from src.models import CIEDE2000, SUCS, xyz_to_lab_user_whitepoint
 
     frames: list[pd.DataFrame] = []
-    model = CIEDE2000(kL=1.0, kC=1.0, kH=1.0)
+
+    diff_key = difference.strip().lower()
+    if diff_key in {"ciede2000", "de00", "de_00"}:
+        mode = "ciede2000"
+        model = CIEDE2000(kL=1.0, kC=1.0, kH=1.0)
+    elif diff_key in {"sucs", "sucs"}:
+        mode = "sucs"
+        model = SUCS(adaptation_transform=adaptation_transform)
+    else:
+        raise ValueError(f"Unknown difference '{difference}'. Use 'CIEDE2000' or 'sUCS'.")
 
     for dataset_id, ds in datasets.items():
         ref_xyz = np.asarray(ds["Ref_XYZ"], dtype=float)
@@ -134,25 +147,51 @@ def run_classic_audit(datasets: dict[str, dict[str, np.ndarray]]) -> pd.DataFram
         if dv.shape[0] != ref_xyz.shape[0]:
             raise ValueError(f"{dataset_id}: DV must be length N, got {dv.shape} for N={ref_xyz.shape[0]}.")
 
-        scale = 0.01 if float(np.max(ref_xyz)) > 1.5 else 1.0
-        ref_xyz = ref_xyz * scale
-        sam_xyz = sam_xyz * scale
-
         if "XYZw" in ds:
             xyz_w = np.asarray(ds["XYZw"], dtype=float)
             if xyz_w.shape != ref_xyz.shape:
                 raise ValueError(f"{dataset_id}: XYZw must be Nx3, got {xyz_w.shape}.")
+
+            max_xyz = float(max(np.max(ref_xyz), np.max(sam_xyz), np.max(xyz_w)))
+            scale = 0.01 if max_xyz > 1.5 else 1.0
+            ref_xyz = ref_xyz * scale
+            sam_xyz = sam_xyz * scale
             xyz_w = xyz_w * scale
             ref_lab = xyz_to_lab_user_whitepoint(ref_xyz, xyz_w)
             sam_lab = xyz_to_lab_user_whitepoint(sam_xyz, xyz_w)
         else:
             import colour
 
+            max_xyz = float(max(np.max(ref_xyz), np.max(sam_xyz)))
+            scale = 0.01 if max_xyz > 1.5 else 1.0
+            ref_xyz = ref_xyz * scale
+            sam_xyz = sam_xyz * scale
+
             ref_lab = colour.XYZ_to_Lab(ref_xyz)
             sam_lab = colour.XYZ_to_Lab(sam_xyz)
 
-        dE = np.asarray(model.predict(ref_lab, sam_lab, input_type="Lab"), dtype=float).reshape(-1)
-        ratio = np.where(dv == 0, np.nan, dE / dv)
+        if mode == "ciede2000":
+            dE = np.asarray(model.predict(ref_lab, sam_lab, input_type="Lab"), dtype=float).reshape(-1)
+        else:
+            if "XYZw" not in ds:
+                raise ValueError(f"{dataset_id}: sUCS requires per-pair whitepoint XYZw.")
+            dE = np.asarray(
+                model.predict(ref_xyz, sam_xyz, input_type="XYZ", whitepoint=xyz_w),
+                dtype=float,
+            ).reshape(-1)
+
+        # Dataset-wise scaling factor F (least squares) to align visual scale to computed scale.
+        # Uses the same closed-form as in STRESS (but applied per dataset):
+        #   dv ≈ F * dE  =>  F = Σ(dE·dv) / Σ(dE²)
+        denom = float(np.sum(dE ** 2))
+        if denom <= 0.0:
+            F = np.nan
+            dv_scaled = np.full_like(dv, np.nan, dtype=float)
+        else:
+            F = float(np.sum(dE * dv) / denom)
+            dv_scaled = dv / F if F != 0.0 else np.full_like(dv, np.nan, dtype=float)
+
+        ratio = np.where(dv_scaled == 0, np.nan, dE / dv_scaled)
 
         frames.append(
             pd.DataFrame(
@@ -165,8 +204,10 @@ def run_classic_audit(datasets: dict[str, dict[str, np.ndarray]]) -> pd.DataFram
                     "Sam_a": sam_lab[:, 1],
                     "Sam_b": sam_lab[:, 2],
                     "dV": dv,
+                    "dV_scaled": dv_scaled,
                     "dE": dE,
                     "Ratio": ratio,
+                    "F": F,
                 }
             )
         )
@@ -188,25 +229,49 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Classic Statistical Audit (Ronnier analysis).")
     parser.add_argument("--mat-file", type=Path, default=_default_mat_path())
     parser.add_argument("--out-dir", type=Path, default=Path("results/classic_audit"))
+    parser.add_argument(
+        "--difference",
+        type=str,
+        default="CIEDE2000",
+        help="Computed difference method: 'CIEDE2000' (DE00) or 'sUCS'.",
+    )
+    parser.add_argument(
+        "--adaptation-transform",
+        type=str,
+        default="CAT02",
+        help="Von Kries chromatic adaptation transform for sUCS (e.g., CAT02, Bradford).",
+    )
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     datasets = load_data(args.mat_file)
-    df = run_classic_audit(datasets)
+    df = run_classic_audit(datasets, difference=args.difference, adaptation_transform=args.adaptation_transform)
 
     out_csv = args.out_dir / "full_audit_data.csv"
     df.to_csv(out_csv, index=False)
     print(f"Wrote: {out_csv}")
 
-    from src.viz_audit import plot_global_bias, plot_outlier_rates
+    from src.viz_audit import (
+        plot_1sigma_counts,
+        plot_1sigma_rate_ranking,
+        plot_global_bias,
+        plot_outlier_counts,
+        plot_outlier_ranking,
+        plot_ratio_ranking,
+        plot_ratio_vs_magnitude,
+    )
 
     plot_global_bias(df, out_dir=args.out_dir)
-    plot_outlier_rates(df, out_dir=args.out_dir)
+    plot_ratio_vs_magnitude(df, out_dir=args.out_dir)
+    plot_outlier_ranking(df, out_dir=args.out_dir)
+    plot_outlier_counts(df, out_dir=args.out_dir)
+    plot_1sigma_counts(df, out_dir=args.out_dir)
+    plot_ratio_ranking(df, out_dir=args.out_dir)
+    plot_1sigma_rate_ranking(df, out_dir=args.out_dir)
 
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

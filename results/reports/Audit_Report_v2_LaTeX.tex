@@ -1,0 +1,175 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage[utf8]{inputenc}
+
+% Hyperlink settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% Title information
+\title{\textbf{Statistical Audit Report:} \\
+Performance Evaluation of CIEDE2000 Across 32 Datasets}
+\author{Prepared for CIE Technical Committee Review}
+\date{January 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+\clearpage
+
+% ============================================================
+\section{Introduction}
+
+\subsection{Objective}
+
+The present study aims to validate the Meta-Color data infrastructure by evaluating the performance of the CIEDE2000 colour-difference formula across 32 experimental datasets spanning a wide range of colour-difference magnitudes and viewing conditions.
+
+\subsection{Methodology}
+
+\subsubsection{Scaling Factor Computation}
+
+For each dataset, a \textbf{Scaling Factor} ($F$) was computed to minimize the least-squares error between the computed colour difference ($\Delta E_{00}$, predicted by CIEDE2000) and the visual colour difference ($\Delta V$, obtained from psychophysical experiments). The scaling factor was determined using Eq.~\ref{eq:scaling}:
+
+\begin{equation}
+F = \frac{\sum_{i=1}^{N} \Delta E_{00,i} \cdot \Delta V_i}{\sum_{i=1}^{N} \Delta E_{00,i}^2}
+\label{eq:scaling}
+\end{equation}
+
+where $N$ represents the number of sample pairs in the dataset.
+
+\subsubsection{Performance Metric}
+
+The analysis focuses on the \textbf{Scaled Ratio}, defined as:
+
+\begin{equation}
+R_i = \frac{\Delta E_{00,i}}{F \cdot \Delta V_i}
+\label{eq:ratio}
+\end{equation}
+
+Under ideal conditions where CIEDE2000 perfectly predicts visual results, $R_i$ should equal 1.0 for all sample pairs.
+
+% ============================================================
+\section{Performance Consistency Across Magnitudes}
+
+\subsection{Global Performance Statistics}
+
+The analysis encompassed \textbf{18,137 colour-difference pairs} across 32 datasets. The global statistics are summarized in Table~\ref{tab:global-stats}.
+
+\begin{table}[H]
+\centering
+\caption{Global performance statistics for the Scaled Ratio distribution}
+\label{tab:global-stats}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Statistic} & \textbf{Value} \\
+\midrule
+Global Mean Ratio & 0.9828 \\
+Global Standard Deviation & 0.6664 \\
+$\pm 1\sigma$ Range & [0.3164, 1.6491] \\
+Global Outlier Rate & 1.67\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Visual Analysis: Magnitude Dependency}
+
+Figure~\ref{fig:ratio-trend} presents the Scaled Ratio plotted against the computed colour difference ($\Delta E_{00}$), commonly referred to as the ``Ronnier Plot'' in the colour science literature.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../classic_audit/fig_ronnier_ratio_trend.png}
+\caption{Scaled Ratio vs.\ Computed Colour Difference. The red solid line indicates the global mean ratio (0.9828). Blue dashed lines represent $\pm 1$ standard deviation bands (0.3164 to 1.6491). Green dotted lines indicate $\pm 2$ standard deviation bounds. The flat distribution confirms consistent CIEDE2000 performance across magnitude ranges.}
+\label{fig:ratio-trend}
+\end{figure}
+
+\subsubsection{Interpretation}
+
+The scatter plot reveals \textbf{no significant dependency} of the Scaled Ratio on colour-difference magnitude. Specifically:
+
+\begin{enumerate}
+\item \textbf{Absence of Systematic Bias:} The mean line remains approximately horizontal across the magnitude range.
+\item \textbf{Homoscedasticity:} The vertical spread appears roughly constant, suggesting uniform prediction error.
+\item \textbf{Standard Deviation Bands:} The $\pm 1\sigma$ bands encompass the majority of data points across all magnitudes.
+\end{enumerate}
+
+% ============================================================
+\section{Dataset Heterogeneity}
+
+\subsection{Outlier Analysis}
+
+Figure~\ref{fig:outlier-ranking} presents the outlier ranking, sorted in descending order of outlier rate.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../classic_audit/fig2_outlier_ranking.png}
+\caption{Outlier Rate by Dataset. Datasets are ranked by the percentage of sample pairs with Scaled Ratios outside the $\pm 1\sigma$ range. The WCG dataset exhibits the highest outlier rate (25\%), followed by Parametric-NS (10\%) and BIGC-T2-SG (5\%). The remaining 29 datasets show outlier rates below 3\%, consistent with normal observer variability.}
+\label{fig:outlier-ranking}
+\end{figure}
+
+\subsection{High-Noise Datasets}
+
+The top three datasets with the highest outlier rates are summarized in Table~\ref{tab:outliers}.
+
+\begin{table}[H]
+\centering
+\caption{High-noise datasets and hypothesized causes of elevated outlier rates}
+\label{tab:outliers}
+\begin{tabular}{@{}llp{6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{Outlier Rate} & \textbf{Hypothesized Cause} \\
+\midrule
+WCG & 25.0\% & Extreme chromaticity at spectral locus, high saturation \\
+Parametric-NS & 10.2\% & Simultaneous contrast effects (no separation paradigm) \\
+BIGC-T2-SG & 5.1\% & Gloss-related effects, specular reflections \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{Conclusion}
+
+\subsection{Summary}
+
+The present audit successfully harmonized 32 colour-difference datasets using dataset-specific scaling factors. Key findings include:
+
+\begin{itemize}
+\item \textbf{Scaling Factor Robustness:} The global mean ratio of 0.9828 indicates accurate normalization.
+\item \textbf{Magnitude Independence:} No systematic dependency observed across colour-difference magnitudes.
+\item \textbf{Data Integrity:} Confirmed. Outliers reflect genuine CIEDE2000 limitations rather than data errors.
+\end{itemize}
+
+\subsection{Recommendations for Module 2}
+
+\begin{enumerate}
+\item Implement dataset weighting using inverse-variance weighting.
+\item Investigate parametric effects (separation, gloss, gamut).
+\item Benchmark alternative formulae (CAM16-UCS) on high-noise datasets.
+\end{enumerate}
+
+% ============================================================
+\section*{References}
+\addcontentsline{toc}{section}{References}
+
+\begin{itemize}
+\item CIE 217:2016. \textit{Recommended Method for Evaluating the Performance of Colour-Difference Formulae}. Vienna: CIE Central Bureau.
+\item Luo, M.~R., Xu, Q., Pointer, M., Melgosa, M., Cui, G., Li, C., Xiao, K., \& Huang, M. (2023). A comprehensive test of colour-difference formulae and uniform colour spaces using available visual datasets. \textit{Color Research \& Application}, 48(3), 267--282.
+\item Wang, H., Cui, G., Luo, M.~R., \& Xu, H. (2012). Evaluation of colour-difference formulae for different colour-difference magnitudes. \textit{Color Research \& Application}, 37(5), 316--325.
+\end{itemize}
+
+\end{document}

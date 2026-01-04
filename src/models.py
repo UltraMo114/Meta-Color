@@ -323,6 +323,90 @@ class CAM16UCS(ColorDifferenceModel):
         return delta_E
 
 
+class SUCS(ColorDifferenceModel):
+    """sUCS colourspace Euclidean distance (Li et al. 2024)."""
+
+    def __init__(self, adaptation_transform: str = "CAT02"):
+        super().__init__("sUCS")
+        self.adaptation_transform = adaptation_transform
+
+        illuminant_xy = colour.CCS_ILLUMINANTS["CIE 1964 10 Degree Standard Observer"]["D65"]
+        self._d65_xyz_domain1 = colour.xy_to_XYZ(illuminant_xy)
+
+    def _delta_sucs_from_xyz(
+        self,
+        xyz_ref: np.ndarray,
+        xyz_sample: np.ndarray,
+        whitepoint_xyz: np.ndarray,
+    ) -> np.ndarray:
+        xyz_ref = np.asarray(xyz_ref, dtype=float)
+        xyz_sample = np.asarray(xyz_sample, dtype=float)
+        wp = np.asarray(whitepoint_xyz, dtype=float)
+
+        if xyz_ref.shape[-1] != 3 or xyz_sample.shape[-1] != 3 or wp.shape[-1] != 3:
+            raise ValueError("reference, sample, and whitepoint must end with 3 components (X, Y, Z)")
+        if xyz_ref.shape != xyz_sample.shape:
+            raise ValueError(f"reference and sample must have the same shape, got {xyz_ref.shape} and {xyz_sample.shape}")
+
+        if wp.shape != (3,) and wp.shape != xyz_ref.shape:
+            raise ValueError(f"whitepoint must have shape (3,) or match XYZ shape; got {wp.shape} for XYZ {xyz_ref.shape}")
+        if np.any(wp[..., 1] == 0):
+            raise ValueError("whitepoint Y component must be non-zero")
+
+        # Normalize so that source whitepoint has Y=1 (Domain1 requirement).
+        scale = 1.0 / wp[..., 1]
+        xyz_ref = xyz_ref * scale[..., np.newaxis]
+        xyz_sample = xyz_sample * scale[..., np.newaxis]
+        wp = wp * scale[..., np.newaxis]
+
+        # Adapt to D65, then convert to sUCS Iab and compute Euclidean distance.
+        xyz_ref_d65 = colour.adaptation.chromatic_adaptation_VonKries(
+            xyz_ref, wp, self._d65_xyz_domain1, transform=self.adaptation_transform
+        )
+        xyz_sample_d65 = colour.adaptation.chromatic_adaptation_VonKries(
+            xyz_sample, wp, self._d65_xyz_domain1, transform=self.adaptation_transform
+        )
+
+        iab_ref = colour.XYZ_to
+        _sUCS(xyz_ref_d65)
+        iab_sample = colour.XYZ_to_sUCS(xyz_sample_d65)
+
+        return np.linalg.norm(iab_sample - iab_ref, axis=-1)
+
+    def predict(
+        self,
+        reference: np.ndarray,
+        sample: np.ndarray,
+        input_type: str = "XYZ",
+        whitepoint: np.ndarray | None = None,
+    ) -> float:
+        if input_type == "XYZ":
+            if whitepoint is None:
+                raise ValueError("XYZ input requires whitepoint (XYZw); refusing to assume a default illuminant.")
+            return self._delta_sucs_from_xyz(reference, sample, whitepoint)
+
+        if input_type == "Lab":
+            # Lab values require a reference whitepoint; if none is provided,
+            # assume D65 10-degree to maintain a usable default.
+            if whitepoint is None:
+                illuminant_xy = colour.CCS_ILLUMINANTS["CIE 1964 10 Degree Standard Observer"]["D65"]
+                wp_xyz = self._d65_xyz_domain1
+            else:
+                wp_xyz_raw = np.asarray(whitepoint, dtype=float)
+                if wp_xyz_raw.shape != (3,):
+                    raise ValueError("Lab input expects whitepoint of shape (3,) when provided.")
+                if float(wp_xyz_raw[1]) == 0.0:
+                    raise ValueError("whitepoint Y component must be non-zero")
+                illuminant_xy = colour.XYZ_to_xy(wp_xyz_raw)
+                wp_xyz = wp_xyz_raw * (1.0 / float(wp_xyz_raw[1]))
+
+            xyz_ref = colour.Lab_to_XYZ(reference, illuminant=illuminant_xy)
+            xyz_sample = colour.Lab_to_XYZ(sample, illuminant=illuminant_xy)
+            return self._delta_sucs_from_xyz(xyz_ref, xyz_sample, wp_xyz)
+
+        raise ValueError(f"Unknown input_type: {input_type}. Use 'XYZ' or 'Lab'")
+
+
 # Factory function for easy model creation
 def get_model(model_name: str, **kwargs) -> ColorDifferenceModel:
     """
@@ -350,6 +434,8 @@ def get_model(model_name: str, **kwargs) -> ColorDifferenceModel:
         'CIEDE2000': CIEDE2000,
         'CAM16UCS': CAM16UCS,
         'CAM16-UCS': CAM16UCS,
+        'SUCS': SUCS,
+        'sUCS': SUCS,
     }
 
     if model_name not in models:

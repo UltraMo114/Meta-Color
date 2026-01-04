@@ -7,7 +7,7 @@ physical properties and match expected behavior.
 
 import pytest
 import numpy as np
-from src.models import CIELAB, CIEDE2000, CAM16UCS, get_model, xyz_to_lab_user_whitepoint
+from src.models import CIELAB, CIEDE2000, CAM16UCS, SUCS, get_model, xyz_to_lab_user_whitepoint
 
 
 class TestColorDifferencePhysics:
@@ -18,7 +18,8 @@ class TestColorDifferencePhysics:
         self.models = [
             CIELAB(),
             CIEDE2000(),
-            CAM16UCS()
+            CAM16UCS(),
+            SUCS(),
         ]
 
         # Standard test colors in XYZ (D65, 10-degree observer)
@@ -175,6 +176,9 @@ class TestCrossValidation:
 
         cam16ucs = get_model('CAM16UCS')
         assert isinstance(cam16ucs, CAM16UCS)
+
+        sucs = get_model('sUCS')
+        assert isinstance(sucs, SUCS)
 
         # Test invalid model name
         with pytest.raises(ValueError):
