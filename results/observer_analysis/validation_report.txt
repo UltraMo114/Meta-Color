@@ -1,0 +1,14 @@
+Validation Report
+Generated: 2026-01-04 14:03:19
+============================================================
+
+Total datasets: 28
+Passed checks: 6
+Warnings: 4
+Errors: 0
+
+Warnings:
+  - Field 'Intra_STRESS' has 1 missing values
+  - Field 'DOI' has 7 missing values
+  - WCG: Very high Inter_STRESS (52.3)
+  - Leeds: Inter_STRESS (25.3) is an outlier for method PC

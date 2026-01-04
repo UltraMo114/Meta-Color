@@ -1,0 +1,17 @@
+{
+  "last_updated": "2026-01-04T13:52:40.925325",
+  "total_datasets": 3,
+  "datasets_with_inter_stress": 3,
+  "datasets_with_intra_stress": 3,
+  "extraction_history": [
+    {
+      "date": "2026-01-04",
+      "action": "Initial example creation",
+      "datasets_added": [
+        "BFD-P",
+        "WCG",
+        "RIT-DuPont"
+      ]
+    }
+  ]
+}

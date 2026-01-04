@@ -1,0 +1,54 @@
+{
+  "dataset_id": "TEMPLATE",
+  "publication": {
+    "authors": "Author, A., Author, B., & Author, C.",
+    "year": 2020,
+    "title": "Title of the paper",
+    "journal": "Journal Name",
+    "volume": 0,
+    "issue": 0,
+    "pages": "000-000",
+    "doi": "10.xxxx/xxxxxx"
+  },
+  "observers": {
+    "n_observers": 10,
+    "age_range": "20-45",
+    "screening": "Ishihara plates",
+    "training": "Description of observer training",
+    "expertise": "Description of observer expertise level"
+  },
+  "experiment": {
+    "method": "PC",
+    "method_full": "Pair Comparison",
+    "n_pairs": 0,
+    "n_repeats": 0,
+    "separation": "Separated",
+    "surface": "Matte",
+    "gamut": "Standard",
+    "illuminant": "D65",
+    "viewing_angle": "2°",
+    "background": "Neutral gray (L*=50)"
+  },
+  "variability": {
+    "intra_stress": {
+      "value": 0.0,
+      "range": [0.0, 0.0],
+      "source": "Table X, page Y",
+      "confidence": "High"
+    },
+    "inter_stress": {
+      "value": 0.0,
+      "source": "Table X, page Y",
+      "confidence": "High"
+    },
+    "cv_percent": 0.0,
+    "sem": 0.0
+  },
+  "extraction_metadata": {
+    "extracted_by": "Merlin",
+    "extraction_date": "2026-01-04",
+    "extraction_method": "Manual from PDF/Markdown",
+    "validation_status": "Pending",
+    "notes": "Additional notes about this dataset"
+  }
+}

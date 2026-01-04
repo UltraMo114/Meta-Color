@@ -367,8 +367,7 @@ class SUCS(ColorDifferenceModel):
             xyz_sample, wp, self._d65_xyz_domain1, transform=self.adaptation_transform
         )
 
-        iab_ref = colour.XYZ_to
-        _sUCS(xyz_ref_d65)
+        iab_ref = colour.XYZ_to_sUCS(xyz_ref_d65)
         iab_sample = colour.XYZ_to_sUCS(xyz_sample_d65)
 
         return np.linalg.norm(iab_sample - iab_ref, axis=-1)
